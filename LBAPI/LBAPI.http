@@ -1,0 +1,6 @@
+@LBAPI_HostAddress = http://localhost:5044
+
+GET {{LBAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
