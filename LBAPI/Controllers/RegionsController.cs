@@ -1,10 +1,12 @@
-﻿using Entities.Data;
+﻿using AutoMapper;
+using Entities.Data;
 using Entities.Domain;
 using Entities.DTO_S;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Services.Repositories;
 
 namespace LBAPI.Controllers
 {
@@ -13,30 +15,25 @@ namespace LBAPI.Controllers
     public class RegionsController : ControllerBase
     {
         private readonly LbDbContext db;
+        private readonly IRegionRepo repo;
+        private readonly IMapper mapper;
 
-        public RegionsController(LbDbContext db)
+        public RegionsController(LbDbContext db, IRegionRepo repo, IMapper mapper)
         {
             this.db = db;
+            this.repo = repo;
+            this.mapper = mapper;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllRegions()
         {
             // Get data from DB
-            var regionsDomain = await db.Regions.ToListAsync();
-            // Map Domain data to DTO
-            var regionsDto = new List<RegionDto>();
-            foreach (var regionDomain in regionsDomain)
-            {
-                regionsDto.Add(new RegionDto()
-                {
-                    Id = regionDomain.Id,
-                    Code = regionDomain.Code,
-                    Name = regionDomain.Name,
-                    ImageUrl = regionDomain.ImageUrl
-                });
-            }
-            // return DTO back to client
+            var regionsDomain = await repo.GetAllAsync();
+            // Map Domain model to DTO
+           var regionsDto = mapper.Map<List<RegionDto>>(regionsDomain);
+
+            //return DTO back to client
             return Ok(regionsDto);
         }
 
@@ -44,23 +41,15 @@ namespace LBAPI.Controllers
         [HttpGet("{id:Guid}")]
         public async Task<IActionResult> GetById([FromRoute]Guid id)
         {
-           var regionDomain = await db.Regions.FirstOrDefaultAsync(r  => r.Id == id);
+           var regionDomain = await repo.GetByIdAsync(id);
             if (regionDomain == null)
             {
                 return NotFound();
             }
 
             // Map RegionDomain to DTO
-            var regionDto = new RegionDto() 
-            {
-                Id = regionDomain.Id,
-                Code = regionDomain.Code,
-                Name = regionDomain.Name,
-                ImageUrl = regionDomain.ImageUrl
-            };
-
             // return DTO to client
-            return Ok(regionDto);
+            return Ok(mapper.Map<RegionDto>(regionDomain));
         }
 
 
@@ -68,77 +57,53 @@ namespace LBAPI.Controllers
         public async Task<IActionResult> CreateRegion([FromBody]CreateRegionDto createRegionDto)
         {
             // Map Dto to domain model
-            var regionDomain = new Region()
-            {
-                Code = createRegionDto.Code,
-                Name = createRegionDto.Name,
-                ImageUrl = createRegionDto.ImageUrl
-            };
+            var regionDomain = mapper.Map<Region>(createRegionDto);
 
             // use domain model to create Region
-            await db.Regions.AddAsync(regionDomain);
-            await db.SaveChangesAsync();
+           regionDomain = await repo.CreateAsync(regionDomain);
 
             // Map domain back to DTO
-            var regionDto = new RegionDto()
-            {
-                Id=regionDomain.Id,
-                Code = regionDomain.Code,
-                Name = regionDomain.Name,
-                ImageUrl = regionDomain.ImageUrl
-            };
+            var regionDto = mapper.Map<RegionDto>(regionDomain);
 
             return CreatedAtAction(nameof(GetById), new {regionDomain.Id}, regionDto);
         }
 
 
         [HttpPut("{id:Guid}")]
-        public async Task<IActionResult> UpdateRegion([FromRoute] Guid id, UpdateRegionDto updateRegionDto)
+        public async Task<IActionResult> UpdateRegion([FromRoute] Guid id, [FromBody] UpdateRegionDto updateRegionDto)
         {
-            // check if region exists
-            var regionDomain = await db.Regions.FirstOrDefaultAsync(r => r.Id == id);
-            if (regionDomain == null)
+            // Map DTO to domain model
+            var regionDomain = mapper.Map<Region>(updateRegionDto);
+
+            // Call repo to update
+            var updatedRegion = await repo.UpdateAsync(id, regionDomain);
+
+            // Check if region exists
+            if (updatedRegion == null)
             {
                 return NotFound();
             }
-            // Map Dto to domain model
-             regionDomain.Code = updateRegionDto.Code;
-            regionDomain.Name = updateRegionDto.Name;
-            regionDomain.ImageUrl = updateRegionDto.ImageUrl;
 
-            await db.SaveChangesAsync();
+            // Map domain model back to DTO
+            var regionDto = mapper.Map<RegionDto>(regionDomain);
 
-            // convert domain to dto
-            var regionDto = new RegionDto()
-            {
-                Id = regionDomain.Id,
-                Code = regionDomain.Code,
-                Name = regionDomain.Name,
-                ImageUrl = regionDomain.ImageUrl
-            };
             return Ok(regionDto);
         }
+
 
 
         [HttpDelete("{id:Guid}")]
         public async Task<IActionResult> DeleteRegion([FromRoute] Guid id)
         {
-           var regionDomain = await db.Regions.FirstOrDefaultAsync(r =>r.Id == id);
+           var regionDomain = await repo.DeleteAsync(id);
             if (regionDomain == null)
             {
                 return NotFound();
             }
-             db.Remove(regionDomain);
-            await db.SaveChangesAsync();
+
 
             // map domain to DTO
-            var regionDto = new RegionDto()
-            {
-                Id = regionDomain.Id,
-                Code = regionDomain.Code,
-                Name = regionDomain.Name,
-                ImageUrl = regionDomain.ImageUrl
-            };
+            var regionDto = mapper.Map<RegionDto>(regionDomain);
             return Ok(regionDto);
         }
     }

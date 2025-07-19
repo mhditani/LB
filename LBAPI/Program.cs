@@ -1,7 +1,10 @@
 using Entities.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using Services.Mappings;
+using Services.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,7 +55,11 @@ builder.Services.AddDbContext<LbDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("LbConnectionString"));
 });
 
+// inject Repositories
+builder.Services.AddScoped<IRegionRepo, RegionRepo>();
 
+// inject Automapper
+builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 
 
 var app = builder.Build();
