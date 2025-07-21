@@ -57,9 +57,11 @@ builder.Services.AddDbContext<LbDbContext>(options =>
 
 // inject Repositories
 builder.Services.AddScoped<IRegionRepo, RegionRepo>();
+builder.Services.AddScoped<IWalkRepo, WalkRepo>();
 
 // inject Automapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
+
 
 
 var app = builder.Build();
