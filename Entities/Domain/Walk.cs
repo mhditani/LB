@@ -18,7 +18,7 @@ namespace Entities.Domain
         public Guid RegionId { get; set; }
 
         //Navigation Property
-        public Difficulty Difficulty { get; set; }
-        public Region Region { get; set; }
+        public Difficulty? Difficulty { get; set; }
+        public Region? Region { get; set; }
     }
 }

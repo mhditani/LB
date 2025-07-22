@@ -23,6 +23,8 @@ namespace Services.Mappings
 
             CreateMap<Difficulty, DifficultyDto>().ReverseMap();
 
+
+      
         }
     }
 }

@@ -15,5 +15,7 @@ namespace Entities.DTO_S
 
         public Guid DifficultyId { get; set; }
         public Guid RegionId { get; set; }
+
+        
     }
 }
