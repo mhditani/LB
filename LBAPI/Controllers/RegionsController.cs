@@ -56,38 +56,48 @@ namespace LBAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateRegion([FromBody]CreateRegionDto createRegionDto)
         {
-            // Map Dto to domain model
-            var regionDomain = mapper.Map<Region>(createRegionDto);
+            if (ModelState.IsValid)
+            {
+                // Map Dto to domain model
+                var regionDomain = mapper.Map<Region>(createRegionDto);
 
-            // use domain model to create Region
-           regionDomain = await repo.CreateAsync(regionDomain);
+                // use domain model to create Region
+                regionDomain = await repo.CreateAsync(regionDomain);
 
-            // Map domain back to DTO
-            var regionDto = mapper.Map<RegionDto>(regionDomain);
+                // Map domain back to DTO
+                var regionDto = mapper.Map<RegionDto>(regionDomain);
 
-            return CreatedAtAction(nameof(GetById), new {regionDomain.Id}, regionDto);
+                return CreatedAtAction(nameof(GetById), new { regionDomain.Id }, regionDto);
+            }
+            return BadRequest(ModelState);
+           
         }
 
 
         [HttpPut("{id:Guid}")]
         public async Task<IActionResult> UpdateRegion([FromRoute] Guid id, [FromBody] UpdateRegionDto updateRegionDto)
         {
-            // Map DTO to domain model
-            var regionDomain = mapper.Map<Region>(updateRegionDto);
-
-            // Call repo to update
-            var updatedRegion = await repo.UpdateAsync(id, regionDomain);
-
-            // Check if region exists
-            if (updatedRegion == null)
+            if (ModelState.IsValid)
             {
-                return NotFound();
+                // Map DTO to domain model
+                var regionDomain = mapper.Map<Region>(updateRegionDto);
+
+                // Call repo to update
+                var updatedRegion = await repo.UpdateAsync(id, regionDomain);
+
+                // Check if region exists
+                if (updatedRegion == null)
+                {
+                    return NotFound();
+                }
+
+                // Map domain model back to DTO
+                var regionDto = mapper.Map<RegionDto>(regionDomain);
+
+                return Ok(regionDto);
             }
-
-            // Map domain model back to DTO
-            var regionDto = mapper.Map<RegionDto>(regionDomain);
-
-            return Ok(regionDto);
+            return BadRequest(ModelState);
+          
         }
 
 

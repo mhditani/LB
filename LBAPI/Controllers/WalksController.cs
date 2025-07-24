@@ -24,15 +24,19 @@ namespace LBAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateWalk([FromBody]CreateWalkDto createWalkDto)
         {
-            // map DTO to Domain 
-            var walkDomain = mapper.Map<Walk>(createWalkDto);
+            if (ModelState.IsValid)
+            {
+                // map DTO to Domain 
+                var walkDomain = mapper.Map<Walk>(createWalkDto);
 
-            await repo.CreateAsync(walkDomain);
+                await repo.CreateAsync(walkDomain);
 
 
-            // Map Domain to DTO
-            var walkDto = mapper.Map<WalkDto>(walkDomain);
-            return Ok(walkDto);
+                // Map Domain to DTO
+                var walkDto = mapper.Map<WalkDto>(walkDomain);
+                return Ok(walkDto);
+            }
+            return BadRequest(ModelState);
         }
 
 
@@ -62,16 +66,20 @@ namespace LBAPI.Controllers
         [HttpPut("{id:Guid}")]
         public async Task<IActionResult> UpdateWalk([FromRoute] Guid id, [FromBody]UpdateWalkDto updateWalkDto)
         {
-            // map Dto tp Domain
-            var walkDomain = mapper.Map<Walk>(updateWalkDto);
-            await repo.UpdateAsync(id, walkDomain);
-
-            if (walkDomain == null)
+            if (ModelState.IsValid)
             {
-                return NotFound();
+                // map Dto tp Domain
+                var walkDomain = mapper.Map<Walk>(updateWalkDto);
+                await repo.UpdateAsync(id, walkDomain);
+
+                if (walkDomain == null)
+                {
+                    return NotFound();
+                }
+                // Map Domain to Dto
+                return Ok(mapper.Map<WalkDto>(walkDomain));
             }
-            // Map Domain to Dto
-            return Ok(mapper.Map<WalkDto>(walkDomain));
+              return BadRequest(ModelState);
         }
 
 
