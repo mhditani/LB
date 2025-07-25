@@ -41,9 +41,9 @@ namespace LBAPI.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetWalks()
+        public async Task<IActionResult> GetWalks([FromQuery] string? filteron, [FromQuery] string? filterQuery, [FromQuery] string? sortBy, [FromQuery] bool? isAscending, [FromQuery]int pageNumber = 1, [FromQuery]int pageSize = 1000)
         {
-            var walkDomain = await repo.GetAllAsync();
+            var walkDomain = await repo.GetAllAsync(filteron, filterQuery, sortBy, isAscending ?? true, pageNumber, pageSize);
 
             // map domain to Dto
             var walkDto = mapper.Map<List<WalkDto>>(walkDomain);
