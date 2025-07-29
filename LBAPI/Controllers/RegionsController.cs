@@ -3,9 +3,9 @@ using Entities.Data;
 using Entities.Domain;
 using Entities.DTO_S;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using Services.Repositories;
 
 namespace LBAPI.Controllers
@@ -26,6 +26,7 @@ namespace LBAPI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Reader")]
         public async Task<IActionResult> GetAllRegions()
         {
             // Get data from DB
@@ -39,6 +40,7 @@ namespace LBAPI.Controllers
 
 
         [HttpGet("{id:Guid}")]
+        [Authorize(Roles = "Reader")]
         public async Task<IActionResult> GetById([FromRoute]Guid id)
         {
            var regionDomain = await repo.GetByIdAsync(id);
@@ -54,6 +56,7 @@ namespace LBAPI.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Writer")]
         public async Task<IActionResult> CreateRegion([FromBody]CreateRegionDto createRegionDto)
         {
             if (ModelState.IsValid)
@@ -75,6 +78,7 @@ namespace LBAPI.Controllers
 
 
         [HttpPut("{id:Guid}")]
+        [Authorize(Roles = "Writer")]
         public async Task<IActionResult> UpdateRegion([FromRoute] Guid id, [FromBody] UpdateRegionDto updateRegionDto)
         {
             if (ModelState.IsValid)
@@ -103,6 +107,7 @@ namespace LBAPI.Controllers
 
 
         [HttpDelete("{id:Guid}")]
+        [Authorize(Roles = "Writer")]   
         public async Task<IActionResult> DeleteRegion([FromRoute] Guid id)
         {
            var regionDomain = await repo.DeleteAsync(id);

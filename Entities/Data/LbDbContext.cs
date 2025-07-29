@@ -1,4 +1,6 @@
 ﻿using Entities.Domain;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -8,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace Entities.Data
 {
-    public class LbDbContext : DbContext
+    public class LbDbContext : IdentityDbContext
     {
-        public LbDbContext(DbContextOptions options) : base(options)
+        public LbDbContext(DbContextOptions<LbDbContext> options) : base(options)
         {
         }
 
@@ -20,10 +22,17 @@ namespace Entities.Data
 
         public DbSet<Region> Regions { get; set; }
 
+        public DbSet<Image> Images { get; set; }
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
                 base.OnModelCreating(modelBuilder);
+            // adding roles
+            var readerId = "9c19878b-940c-4c05-8663-35d8f9178555";
+            var writerId = "00f3d510-437a-40e8-881b-be07cff9527a";
+
             // Seed Data for difficulties using EF
             // Easy Medium Hard
             var difficulties = new List<Difficulty>()
@@ -112,6 +121,30 @@ namespace Entities.Data
             // Seed data for regions
             modelBuilder.Entity<Region>().HasData(regions);
 
+            // seed data for roles
+            var roles = new List<IdentityRole>
+            {
+                
+                new IdentityRole()
+                {
+                    Id = readerId,
+                    ConcurrencyStamp = readerId,
+                    Name = "Reader",
+                    NormalizedName = "Reader".ToUpper()
+                },
+                new IdentityRole()
+                {
+                    Id = writerId,
+                    ConcurrencyStamp = writerId,
+                    Name = "Writer",
+                    NormalizedName = "Writer".ToUpper()
+                }
+            };
+            modelBuilder.Entity<IdentityRole>().HasData(roles);
         }
+
+        
+
+       
     }
 }
