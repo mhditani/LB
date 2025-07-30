@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Services.Repositories;
+using System.Text.Json;
 
 namespace LBAPI.Controllers
 {
@@ -17,25 +18,42 @@ namespace LBAPI.Controllers
         private readonly LbDbContext db;
         private readonly IRegionRepo repo;
         private readonly IMapper mapper;
+        private readonly ILogger<RegionsController> logger;
 
-        public RegionsController(LbDbContext db, IRegionRepo repo, IMapper mapper)
+        public RegionsController(LbDbContext db, IRegionRepo repo, IMapper mapper, ILogger<RegionsController> logger)
         {
             this.db = db;
             this.repo = repo;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
         [HttpGet]
         [Authorize(Roles = "Reader")]
         public async Task<IActionResult> GetAllRegions()
         {
-            // Get data from DB
-            var regionsDomain = await repo.GetAllAsync();
-            // Map Domain model to DTO
-           var regionsDto = mapper.Map<List<RegionDto>>(regionsDomain);
+            try
+            {
+                throw new Exception("This is a custom exception");
 
-            //return DTO back to client
-            return Ok(regionsDto);
+                // Get data from DB
+                var regionsDomain = await repo.GetAllAsync();
+                // Map Domain model to DTO
+                var regionsDto = mapper.Map<List<RegionDto>>(regionsDomain);
+
+                //return DTO back to client
+
+                logger.LogInformation($"Finished get all regions request with data: {JsonSerializer.Serialize(regionsDomain)}");
+
+                return Ok(regionsDto);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, ex.Message);
+                throw;
+            }
+
+         
         }
 
 
